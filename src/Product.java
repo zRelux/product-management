@@ -87,4 +87,12 @@ public class Product {
 	public String toString() {
 		return "Product: " + getName() + " stock level: " + getStockLevel() + " price at: " + getPrice();
 	}
+	
+	/***
+	 * Returns the object in to string format for file saving
+	 * @return string format of the object
+	 */
+	public String toFile() {
+		return getName() + ";" + getStockLevel() + ";" + getPrice();
+	}
 }

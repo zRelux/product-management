@@ -4,10 +4,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
+import java.io.File;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -21,23 +22,28 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Window extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
-	private JTextField txtSetPrice;
-	private JTextField txtSetStock;
+	//JMenu elements
+	private JMenuBar menuBar;
+	private JMenu mnFile;
+	private JMenuItem mntmInformation;
+	private JMenuItem mntmClearList;
+	private JMenu mnAbout;
+	private JMenuItem mntmSaveToFile;
+	
+	//JList
+	private JScrollPane scrollPane;
 	private JList<String> list;
 	private DefaultListModel<String> model = new DefaultListModel<String>();
-	private JLabel lblSetPrice;
-	private JButton btnSetPrice;
-	private JLabel lblSetStock;
-	private JButton btnSetStock;
-	private JLabel lblCurrentStock;
+	
+	//Add Section
+	private JPanel addPanel;
 	private JLabel lblAddNewProduct;
 	private JSeparator addSeparator;
 	private JLabel lblName;
@@ -47,130 +53,141 @@ public class Window extends JFrame {
 	private JLabel lblPrice;
 	private JTextField txtPrice;
 	private JButton btnAdd;
+	
+	//Sell Section
+	private JPanel sellPanel;
+	private JLabel lblSell;
+	private JSeparator sellSeparator;
+	private JLabel lblProductInfo;
+	private JLabel lblSoldItems;
+	private JLabel lblSellItem;
+	private JTextField txtSellItem;
+	private JButton btnSell;
+	
+	//Set Section
+	private JPanel updatePanel;
 	private JLabel lblUpdateProduct;
 	private JSeparator updateSeparator;
-	private JScrollPane scrollPane;
-	private JLabel lblRemoveSelectedProduct;
-	private JSeparator removeSeparator;
-	private JButton btnRemoveSelectedItem;
+	private JTextField txtSetPrice;
+	private JTextField txtSetStock;
+	private JLabel lblSetPrice;
+	private JButton btnSetPrice;
+	private JLabel lblSetStock;
+	private JButton btnSetStock;
+	private JLabel lblCurrentStock;
 	private JSeparator newNameSeparator;
 	private JSeparator newPriceSeparator;
 	private JLabel lblSetName;
 	private JTextField txtSetName;
 	private JButton btnSetName;
-	private JMenuBar menuBar;
-	private JMenu mnFile;
-	private JMenu mnEdit;
-	private JMenu mnAbout;
-	private JSeparator sellSeparator;
-	private JLabel lblSell;
-	private JTextField txtSellItem;
-	private JLabel lblSoldItems;
-	private JLabel lblSellItem;
-	private JButton btnSell;
-
-	private ArrayList<Product> products;
-	private int itemsSold = 0;
-	private double totalPrice = 0;
-	private JLabel lblProductInfo;
 	private JSeparator nameSeparator;
 
+	//Remove Section
+	private JPanel removePanel;
+	private JLabel lblRemoveSelectedProduct;
+	private JSeparator removeSeparator;
+	private JButton btnRemoveSelectedItem;
+	
+	//Productmanagment object
+	private ProductManagement managment;
+	
 	public Window() {
-		products = new ArrayList<Product>();
+		managment = new ProductManagement();
 		init();
+		addToList();
 	}
 
+	/***
+	 * Window initialization method renders elements
+	 * 
+	 */
 	private void init() {
 		setTitle("Product Managment Leonardo Drici u1905444");
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent event) {
+				managment.saveToFile();
 				dispose();
 				System.exit(0);
 			}
 		});
-		setBounds(100, 100, 800, 650);
-		setLocationRelativeTo(null);
+		setSize(815, 665);
+		getContentPane().setLayout(null);
 		setResizable(false);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(null);
+		setLocationRelativeTo(null);
 
-		// JMENU
+		// JMENU 
 		menuBar = new JMenuBar();
-		menuBar.setBounds(0, 0, 795, 20);
-		contentPane.add(menuBar);
-
-		mnFile = new JMenu("File");
-		menuBar.add(mnFile);
-
-		JMenuItem mntmOpenFile = new JMenuItem("Open file");
-		mntmOpenFile.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-
-			}
-		});
-		mnFile.add(mntmOpenFile);
-
-		JMenuItem mntmSaveToFile = new JMenuItem("Save to file");
+		
+		mntmSaveToFile = new JMenuItem("Save to file");
 		mntmSaveToFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setDialogTitle("Specify a file to save");
+				fileChooser.setFileFilter(new FileNameExtensionFilter("CSV file", "csv"));
+				int userSelection = fileChooser.showSaveDialog(getContentPane());
 
+				if (userSelection == JFileChooser.APPROVE_OPTION) {
+					File fileToSave = fileChooser.getSelectedFile();
+
+					if (!fileToSave.getAbsolutePath().endsWith(".csv"))
+						fileToSave = new File(fileToSave.getAbsolutePath() + ".csv");
+
+					managment.saveAsUserCSV(fileToSave.getAbsolutePath());
+				}
 			}
 		});
-		mnFile.add(mntmSaveToFile);
-
-		JMenuItem mntmClearList = new JMenuItem("Clear list");
+		
+		mntmClearList = new JMenuItem("Clear list");
 		mntmClearList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				int res = JOptionPane.showConfirmDialog(getContentPane(), "Are you sure you want to delete everything",
+						"Information", JOptionPane.YES_NO_OPTION);
+				if (res == 0) {
+					managment.clearAll();
+					model.clear();
+				}
 			}
 		});
-		mnFile.add(mntmClearList);
-
-		mnEdit = new JMenu("Edit");
-		menuBar.add(mnEdit);
-
-		JMenuItem mntmBoh = new JMenuItem("Boh");
-		mntmBoh.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-
-			}
-		});
-		mnEdit.add(mntmBoh);
-
-		mnAbout = new JMenu("About");
-		menuBar.add(mnAbout);
-
-		JMenuItem mntmInformation = new JMenuItem("Information");
+		
+		mntmInformation = new JMenuItem("Information");
 		mntmInformation.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				JOptionPane.showConfirmDialog(getContentPane(), "Basic Product Management software made by Leonardo Drici 1905444",
+						"Information", JOptionPane.PLAIN_MESSAGE);
 			}
 		});
+		
+		mnFile = new JMenu("File");
+		mnFile.add(mntmSaveToFile);
+		mnFile.add(mntmClearList);
+		
+		mnAbout = new JMenu("About");
 		mnAbout.add(mntmInformation);
-
+		
+		menuBar.add(mnFile);
+		menuBar.add(mnAbout);
+		
+		setJMenuBar(menuBar);
+		
 		// LIST SECTION
 		scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 30, 320, 580);
-		contentPane.add(scrollPane);
+		scrollPane.setBounds(10, 10, 320, 580);
 		list = new JList<String>();
 		scrollPane.setViewportView(list);
 		list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				int selectedProduct = list.getSelectedIndex();
 				if (selectedProduct > -1) {
-					lblSetPrice.setText("Set new price of " + products.get(selectedProduct).getName() + " current is "
-							+ value(products.get(selectedProduct).getPrice()));
-					lblSetStock.setText("Update stock level of " + products.get(selectedProduct).getName());
-					lblCurrentStock.setText("Current Stock: " + products.get(selectedProduct).getStockLevel());
-					lblSetName.setText("Set new name of " + products.get(selectedProduct).getName());
-					lblSellItem.setText("Sell " + products.get(selectedProduct).getName());
-					lblProductInfo.setText(products.get(selectedProduct).getName() + " the price is "
-							+ value(products.get(selectedProduct).getPrice()) + " the stock level is "
-							+ products.get(selectedProduct).getStockLevel());
+					lblSetPrice.setText("Set new price of " + managment.getProduct(selectedProduct).getName()
+							+ " current is " + value(managment.getProduct(selectedProduct).getPrice()));
+					lblSetStock.setText("Update stock level of " + managment.getProduct(selectedProduct).getName());
+					lblCurrentStock.setText("Current Stock: " + managment.getProduct(selectedProduct).getStockLevel());
+					lblSetName.setText("Set new name of " + managment.getProduct(selectedProduct).getName());
+					lblSellItem.setText("Sell " + managment.getProduct(selectedProduct).getName());
+					lblProductInfo.setText(managment.getProduct(selectedProduct).getName() + " the price is "
+							+ value(managment.getProduct(selectedProduct).getPrice()) + " the stock level is "
+							+ managment.getProduct(selectedProduct).getStockLevel());
 					btnSetName.setEnabled(true);
 					btnSetPrice.setEnabled(true);
 					btnSetStock.setEnabled(true);
@@ -181,48 +198,56 @@ public class Window extends JFrame {
 		});
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setModel(model);
+		
+		getContentPane().add(scrollPane);
 
 		// ADD NEW PRODUCT SECTION
+		addPanel = new JPanel();
+		addPanel.setBounds(340, 11, 435, 133);
+		addPanel.setLayout(null);
+
 		lblAddNewProduct = new JLabel("Add new product");
+		lblAddNewProduct.setBounds(170, 5, 95, 14);
+		addPanel.add(lblAddNewProduct);
 		lblAddNewProduct.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblAddNewProduct.setBounds(340, 30, 100, 25);
-		contentPane.add(lblAddNewProduct);
 
 		addSeparator = new JSeparator();
-		addSeparator.setBounds(340, 55, 435, 2);
-		contentPane.add(addSeparator);
+		addSeparator.setBounds(0, 25, 435, 2);
+		addPanel.add(addSeparator);
 
 		lblName = new JLabel("Name: ");
+		lblName.setBounds(10, 30, 100, 25);
+		addPanel.add(lblName);
 		lblName.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblName.setBounds(340, 65, 100, 25);
-		contentPane.add(lblName);
 
 		txtName = new JTextField();
-		txtName.setBounds(450, 65, 100, 25);
-		contentPane.add(txtName);
+		txtName.setBounds(110, 30, 100, 25);
+		addPanel.add(txtName);
 		txtName.setColumns(10);
 
 		lblStockLevel = new JLabel("Stock level:");
+		lblStockLevel.setBounds(10, 65, 100, 25);
+		addPanel.add(lblStockLevel);
 		lblStockLevel.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblStockLevel.setBounds(340, 100, 100, 25);
-		contentPane.add(lblStockLevel);
 
 		txtStock = new JTextField();
+		txtStock.setBounds(110, 65, 100, 25);
+		addPanel.add(txtStock);
 		txtStock.setColumns(10);
-		txtStock.setBounds(450, 100, 100, 25);
-		contentPane.add(txtStock);
 
 		lblPrice = new JLabel("Price:");
+		lblPrice.setBounds(10, 97, 100, 25);
+		addPanel.add(lblPrice);
 		lblPrice.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblPrice.setBounds(340, 135, 100, 25);
-		contentPane.add(lblPrice);
 
 		txtPrice = new JTextField();
+		txtPrice.setBounds(110, 97, 100, 25);
+		addPanel.add(txtPrice);
 		txtPrice.setColumns(10);
-		txtPrice.setBounds(450, 135, 100, 25);
-		contentPane.add(txtPrice);
 
 		btnAdd = new JButton("Add new product");
+		btnAdd.setBounds(295, 97, 130, 25);
+		addPanel.add(btnAdd);
 		btnAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (!txtName.getText().equals("") && !txtStock.getText().equals("") && !txtPrice.getText().equals("")) {
@@ -232,238 +257,319 @@ public class Window extends JFrame {
 							Double.parseDouble(txtPrice.getText());
 							Product temp = new Product(txtName.getText(), Integer.parseInt(txtStock.getText()),
 									Double.parseDouble(txtPrice.getText()));
-							products.add(temp);
+							managment.addProduct(temp);
 							model.addElement(temp.getName());
 							txtName.setText("");
 							txtStock.setText("");
 							txtPrice.setText("");
 						} catch (NumberFormatException e) {
-							JOptionPane.showMessageDialog(null, "Couldn't add product because price is not a number",
+							JOptionPane.showMessageDialog(getContentPane(), "Couldn't add product because price is not a number",
 									"Error", JOptionPane.ERROR_MESSAGE);
 						}
 					} catch (NumberFormatException e) {
-						JOptionPane.showMessageDialog(null, "Couldn't add product because stock number is not a number",
+						JOptionPane.showMessageDialog(getContentPane(), "Couldn't add product because stock number is not a number",
 								"Error", JOptionPane.ERROR_MESSAGE);
 					}
 
 				} else {
-					JOptionPane.showMessageDialog(null, "One of the fields is empty", "Error",
-							JOptionPane.ERROR_MESSAGE);
+					if(txtName.getText().equals("")) {
+						JOptionPane.showMessageDialog(getContentPane(), "Name field cannot be empty", "Error",
+								JOptionPane.ERROR_MESSAGE);
+					}else if(txtStock.getText().equals("")) {
+						JOptionPane.showMessageDialog(getContentPane(), "Stock field cannot be empty", "Error",
+								JOptionPane.ERROR_MESSAGE);
+					}else if(txtPrice.getText().equals("")) {
+						JOptionPane.showMessageDialog(getContentPane(), "Price field cannot be empty", "Error",
+								JOptionPane.ERROR_MESSAGE);
+					}
+					
 				}
 			}
 		});
-		btnAdd.setBounds(645, 135, 130, 25);
-		contentPane.add(btnAdd);
+
+		getContentPane().add(addPanel);
 
 		// SELL PRODUCT SECTION
+		sellPanel = new JPanel();
+		sellPanel.setBounds(340, 155, 435, 150);
+		sellPanel.setLayout(null);
+
 		lblSell = new JLabel("Sell product");
+		lblSell.setBounds(184, 15, 67, 14);
+		sellPanel.add(lblSell);
 		lblSell.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblSell.setBounds(340, 175, 100, 25);
-		contentPane.add(lblSell);
 
 		sellSeparator = new JSeparator();
-		sellSeparator.setBounds(340, 200, 435, 2);
-		contentPane.add(sellSeparator);
+		sellSeparator.setBounds(0, 33, 425, 2);
+		sellPanel.add(sellSeparator);
 
 		lblProductInfo = new JLabel("");
+		lblProductInfo.setBounds(67, 44, 300, 15);
+		sellPanel.add(lblProductInfo);
 		lblProductInfo.setHorizontalAlignment(SwingConstants.CENTER);
 		lblProductInfo.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblProductInfo.setBounds(340, 210, 435, 30);
-		contentPane.add(lblProductInfo);
 
 		nameSeparator = new JSeparator();
-		nameSeparator.setBounds(390, 250, 320, 2);
-		contentPane.add(nameSeparator);
+		nameSeparator.setBounds(93, 14, 0, 2);
+		sellPanel.add(nameSeparator);
 
-		lblSoldItems = new JLabel("Sold items " + itemsSold + " for a total of " + value(totalPrice));
+		lblSoldItems = new JLabel(
+				"Sold items " + managment.getItemsSold() + " for a total of " + value(managment.getTotalPrice()));
+		lblSoldItems.setBounds(67, 85, 300, 15);
+		sellPanel.add(lblSoldItems);
 		lblSoldItems.setHorizontalAlignment(SwingConstants.CENTER);
 		lblSoldItems.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblSoldItems.setBounds(340, 265, 435, 25);
-		contentPane.add(lblSoldItems);
 
 		lblSellItem = new JLabel("Sell ");
-		lblSellItem.setBounds(340, 300, 265, 25);
-		contentPane.add(lblSellItem);
+		lblSellItem.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblSellItem.setBounds(10, 115, 55, 20);
+		sellPanel.add(lblSellItem);
 
 		txtSellItem = new JTextField();
+		txtSellItem.setBounds(80, 115, 85, 20);
+		sellPanel.add(txtSellItem);
 		txtSellItem.setColumns(10);
-		txtSellItem.setBounds(615, 300, 75, 25);
-		contentPane.add(txtSellItem);
 
 		btnSell = new JButton("SELL");
+		btnSell.setBounds(370, 115, 55, 25);
+		sellPanel.add(btnSell);
 		btnSell.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				int selectedProduct = list.getSelectedIndex();
 				try {
 					int itemsSelling = Integer.parseInt(txtSellItem.getText());
-					itemsSold += itemsSelling;
-					try {
-						totalPrice += products.get(selectedProduct).sell(itemsSelling);
-						lblSoldItems.setText("Sold items " + itemsSold + " for a total of " + value(totalPrice));
-						lblCurrentStock.setText("Current Stock: " + products.get(selectedProduct).getStockLevel());
-						lblProductInfo.setText(products.get(selectedProduct).getName() + " the price is "
-								+ value(products.get(selectedProduct).getPrice()) + " the stock level is "
-								+ products.get(selectedProduct).getStockLevel());
-					} catch (SellingException e) {
-						JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					if (itemsSelling > 0) {
+						try {
+							managment.addToTotalPrice(managment.getProduct(selectedProduct).sell(itemsSelling));
+							managment.addToItemsSold(itemsSelling);
+							lblSoldItems.setText("Sold items " + managment.getItemsSold() + " for a total of "
+									+ value(managment.getTotalPrice()));
+							lblCurrentStock
+									.setText("Current Stock: " + managment.getProduct(selectedProduct).getStockLevel());
+							lblProductInfo.setText(managment.getProduct(selectedProduct).getName() + " the price is "
+									+ value(managment.getProduct(selectedProduct).getPrice()) + " the stock level is "
+									+ managment.getProduct(selectedProduct).getStockLevel());
+						} catch (SellingException e) {
+							JOptionPane.showMessageDialog(getContentPane(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+						}
+					} else {
+						JOptionPane.showMessageDialog(getContentPane(), "Item cannot be less than 0", "Error",
+								JOptionPane.ERROR_MESSAGE);
 					}
 				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(null, "Couldn't sell product because number is not a correct",
+					JOptionPane.showMessageDialog(getContentPane(), "Couldn't sell product because number is not correct.",
 							"Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
 		btnSell.setEnabled(false);
-		btnSell.setBounds(700, 300, 75, 25);
-		contentPane.add(btnSell);
+
+		getContentPane().add(sellPanel);
 
 		// UPDATE PRODUCT SECTION
+		updatePanel = new JPanel();
+		updatePanel.setBounds(340, 316, 435, 210);
+		updatePanel.setLayout(null);
+
 		lblUpdateProduct = new JLabel("Update product");
+		lblUpdateProduct.setBounds(172, 0, 100, 25);
+		updatePanel.add(lblUpdateProduct);
 		lblUpdateProduct.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblUpdateProduct.setBounds(340, 335, 100, 25);
-		contentPane.add(lblUpdateProduct);
 
 		updateSeparator = new JSeparator();
-		updateSeparator.setBounds(340, 355, 435, 2);
-		contentPane.add(updateSeparator);
+		updateSeparator.setBounds(0, 25, 435, 2);
+		updatePanel.add(updateSeparator);
 
 		lblSetName = new JLabel("Set new name of ");
-		lblSetName.setBounds(340, 370, 265, 25);
-		contentPane.add(lblSetName);
+		lblSetName.setBounds(10, 40, 245, 25);
+		updatePanel.add(lblSetName);
 
 		txtSetName = new JTextField();
+		txtSetName.setBounds(265, 40, 75, 25);
+		updatePanel.add(txtSetName);
 		txtSetName.setColumns(10);
-		txtSetName.setBounds(615, 370, 75, 25);
-		contentPane.add(txtSetName);
 
 		btnSetName = new JButton("SET");
+		btnSetName.setBounds(350, 40, 75, 25);
+		updatePanel.add(btnSetName);
 		btnSetName.setEnabled(false);
-		btnSetName.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				int selectedIndex = list.getSelectedIndex();
-				products.get(selectedIndex).setName(txtSetName.getText());
-				model.removeElementAt(selectedIndex);
-				model.add(selectedIndex, products.get(selectedIndex).getName());
-				txtSetName.setText("");
-				lblProductInfo.setText("");
-				btnSetName.setEnabled(false);
-				btnSetPrice.setEnabled(false);
-				btnSetStock.setEnabled(false);
-				btnSell.setEnabled(false);
-			}
-		});
-		btnSetName.setBounds(700, 370, 75, 25);
-		contentPane.add(btnSetName);
 
 		newPriceSeparator = new JSeparator();
-		newPriceSeparator.setBounds(390, 460, 320, 2);
-		contentPane.add(newPriceSeparator);
+		newPriceSeparator.setBounds(0, 126, 435, 2);
+		updatePanel.add(newPriceSeparator);
 
 		lblSetPrice = new JLabel("Set new price of ");
-		lblSetPrice.setBounds(340, 420, 265, 25);
-		contentPane.add(lblSetPrice);
+		lblSetPrice.setBounds(10, 90, 245, 25);
+		updatePanel.add(lblSetPrice);
 
 		txtSetPrice = new JTextField();
-		txtSetPrice.setBounds(615, 420, 75, 25);
-		contentPane.add(txtSetPrice);
+		txtSetPrice.setBounds(265, 90, 75, 25);
+		updatePanel.add(txtSetPrice);
 		txtSetPrice.setColumns(10);
 
 		btnSetPrice = new JButton("SET");
+		btnSetPrice.setBounds(350, 90, 75, 25);
+		updatePanel.add(btnSetPrice);
 		btnSetPrice.setEnabled(false);
-		btnSetPrice.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				int selectedProduct = list.getSelectedIndex();
-				try {
-					Double.parseDouble(txtSetPrice.getText());
-					products.get(selectedProduct).setPrice(Double.parseDouble(txtSetPrice.getText()));
-					txtSetPrice.setText("");
-					lblSetPrice.setText("Set new price of " + products.get(selectedProduct).getName() + " current is "
-							+ value(products.get(selectedProduct).getPrice()));
-					lblProductInfo.setText(products.get(selectedProduct).getName() + " the price is "
-							+ value(products.get(selectedProduct).getPrice()) + " the stock level is "
-							+ products.get(selectedProduct).getStockLevel());
-				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(null, "Couldn't update price because it is not a number", "Error",
-							JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		});
-		btnSetPrice.setBounds(700, 420, 75, 25);
-		contentPane.add(btnSetPrice);
 
 		newNameSeparator = new JSeparator();
-		newNameSeparator.setBounds(390, 410, 320, 2);
-		contentPane.add(newNameSeparator);
+		newNameSeparator.setBounds(0, 75, 435, 2);
+		updatePanel.add(newNameSeparator);
 
 		lblSetStock = new JLabel("Update stock level of ");
-		lblSetStock.setBounds(340, 480, 265, 25);
-		contentPane.add(lblSetStock);
+		lblSetStock.setBounds(10, 140, 245, 25);
+		updatePanel.add(lblSetStock);
 
 		lblCurrentStock = new JLabel("Current Stock: ");
-		lblCurrentStock.setBounds(340, 515, 265, 25);
-		contentPane.add(lblCurrentStock);
+		lblCurrentStock.setBounds(10, 175, 245, 25);
+		updatePanel.add(lblCurrentStock);
 
 		txtSetStock = new JTextField();
+		txtSetStock.setBounds(265, 174, 75, 25);
+		updatePanel.add(txtSetStock);
 		txtSetStock.setColumns(10);
-		txtSetStock.setBounds(615, 515, 75, 25);
-		contentPane.add(txtSetStock);
 
 		btnSetStock = new JButton("ADD");
+		btnSetStock.setBounds(350, 175, 75, 25);
+		updatePanel.add(btnSetStock);
 		btnSetStock.setEnabled(false);
 		btnSetStock.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				int selectedProduct = list.getSelectedIndex();
 				try {
 					Integer.parseInt(txtSetStock.getText());
-					products.get(selectedProduct).reStock(Integer.parseInt(txtSetStock.getText()));
-					txtSetStock.setText("");
-					lblCurrentStock.setText("Current Stock: " + products.get(selectedProduct).getStockLevel());
-					lblProductInfo.setText(products.get(selectedProduct).getName() + " the price is "
-							+ value(products.get(selectedProduct).getPrice()) + " the stock level is "
-							+ products.get(selectedProduct).getStockLevel());
+					if (Integer.parseInt(txtSetStock.getText()) > 0) {
+						managment.getProduct(selectedProduct).reStock(Integer.parseInt(txtSetStock.getText()));
+						txtSetStock.setText("");
+						lblCurrentStock
+								.setText("Current Stock: " + managment.getProduct(selectedProduct).getStockLevel());
+						lblProductInfo.setText(managment.getProduct(selectedProduct).getName() + " the price is "
+								+ value(managment.getProduct(selectedProduct).getPrice()) + " the stock level is "
+								+ managment.getProduct(selectedProduct).getStockLevel());
+					} else {
+						JOptionPane.showMessageDialog(getContentPane(), "Couldn't update stock because the value is less than 0",
+								"Error", JOptionPane.ERROR_MESSAGE);
+					}
 				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(null, "Couldn't update stock because it is not a number", "Error",
+					JOptionPane.showMessageDialog(getContentPane(), "Couldn't update stock because it is not a number", "Error",
 							JOptionPane.ERROR_MESSAGE);
 				}
 
 			}
 		});
-		btnSetStock.setBounds(700, 515, 75, 25);
-		contentPane.add(btnSetStock);
+		btnSetPrice.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int selectedProduct = list.getSelectedIndex();
+				try {
+					Double.parseDouble(txtSetPrice.getText());
+					if (Double.parseDouble(txtSetPrice.getText()) > 0) {
+						managment.getProduct(selectedProduct).setPrice(Double.parseDouble(txtSetPrice.getText()));
+						txtSetPrice.setText("");
+						lblSetPrice.setText("Set new price of " + managment.getProduct(selectedProduct).getName()
+								+ " current is " + value(managment.getProduct(selectedProduct).getPrice()));
+						lblProductInfo.setText(managment.getProduct(selectedProduct).getName() + " the price is "
+								+ value(managment.getProduct(selectedProduct).getPrice()) + " the stock level is "
+								+ managment.getProduct(selectedProduct).getStockLevel());
+					} else {
+						JOptionPane.showMessageDialog(getContentPane(), "Couldn't update price because the value is less than 0",
+								"Error", JOptionPane.ERROR_MESSAGE);
+					}
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(getContentPane(), "Couldn't update price because it is not a number", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		btnSetName.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int selectedIndex = list.getSelectedIndex();
+				if (!txtSetName.getText().equals("")) {
+					managment.getProduct(selectedIndex).setName(txtSetName.getText());
+					model.removeElementAt(selectedIndex);
+					model.add(selectedIndex, managment.getProduct(selectedIndex).getName());
+					txtSetName.setText("");
+					lblProductInfo.setText("");
+					btnSetName.setEnabled(false);
+					btnSetPrice.setEnabled(false);
+					btnSetStock.setEnabled(false);
+					btnSell.setEnabled(false);
+				} else {
+					JOptionPane.showMessageDialog(getContentPane(), "Couldn't change product name because name is empty", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+
+		getContentPane().add(updatePanel);
 
 		// REMOVE PRODUCT SECTION
-		lblRemoveSelectedProduct = new JLabel("Remove selected product");
-		lblRemoveSelectedProduct.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblRemoveSelectedProduct.setBounds(340, 550, 160, 25);
-		contentPane.add(lblRemoveSelectedProduct);
+		removePanel = new JPanel();
+		removePanel.setBounds(340, 537, 435, 56);
+		removePanel.setLayout(null);
 
 		removeSeparator = new JSeparator();
-		removeSeparator.setBounds(340, 575, 435, 2);
-		contentPane.add(removeSeparator);
+		removeSeparator.setBounds(0, 20, 435, 2);
+		removePanel.add(removeSeparator);
 
 		btnRemoveSelectedItem = new JButton("Remove selected item");
+		btnRemoveSelectedItem.setBounds(140, 28, 160, 25);
+		removePanel.add(btnRemoveSelectedItem);
 		btnRemoveSelectedItem.setFont(new Font("Tahoma", Font.BOLD, 11));
 		btnRemoveSelectedItem.setForeground(Color.RED);
+
+		lblRemoveSelectedProduct = new JLabel("Remove selected product");
+		lblRemoveSelectedProduct.setBounds(145, 0, 145, 15);
+		removePanel.add(lblRemoveSelectedProduct);
+		lblRemoveSelectedProduct.setFont(new Font("Tahoma", Font.BOLD, 11));
 		btnRemoveSelectedItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				int index = list.getSelectedIndex();
-				if(index > -1) {
-					products.remove(index);
-					model.remove(index);
-				}else {
-					JOptionPane.showMessageDialog(null, "Please select a Product to delete", "Error",
+				if (index > -1) {
+					int res = JOptionPane.showConfirmDialog(getContentPane(), "Are you sure you want to delete " + managment.getProduct(index).getName(),
+							"Information", JOptionPane.YES_NO_OPTION);
+					if (res == 0) {
+						managment.removeProduct(index);
+						model.remove(index);
+						managment.saveToFile();
+						lblSetPrice.setText("Set new price of " + "current is ");
+						lblSetStock.setText("Update stock level of ");
+						lblCurrentStock.setText("Current Stock: ");
+						lblSetName.setText("Set new name of ");
+						lblSellItem.setText("Sell ");
+						btnSetName.setEnabled(false);
+						btnSetPrice.setEnabled(false);
+						btnSetStock.setEnabled(false);
+						btnSell.setEnabled(false);
+					}
+					
+				} else {
+					JOptionPane.showMessageDialog(getContentPane(), "Please select a Product to delete", "Error",
 							JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
-		btnRemoveSelectedItem.setBounds(575, 585, 200, 25);
-		contentPane.add(btnRemoveSelectedItem);
+
+		getContentPane().add(removePanel);
 
 		// SET CONTENT PANE VISIBLE
 		setVisible(true);
 	}
 
+	/***
+	 * Returns a string with the £ or p symbol based on the price
+	 * @param price price to convert
+	 * @return String with £ or p symbol
+	 */
 	private String value(double price) {
 		return ((price < 1) ? price + "p" : "£ " + price);
+	}
+	
+	/***
+	 * Method to add all elements in product managment into the list 
+	 */
+	private void addToList() {
+		for (Product item : managment.getProducts()) {
+			model.addElement(item.getName());
+		}
 	}
 }

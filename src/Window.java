@@ -40,7 +40,7 @@ public class Window extends JFrame {
 	//JList
 	private JScrollPane scrollPane;
 	private JList<String> list;
-	private DefaultListModel<String> model = new DefaultListModel<String>();
+	private DefaultListModel<String> model = new DefaultListModel<>();
 	
 	//Add Section
 	private JPanel addPanel;
@@ -556,16 +556,16 @@ public class Window extends JFrame {
 	}
 
 	/***
-	 * Returns a string with the £ or p symbol based on the price
+	 * Returns a string with the Â£ or p symbol based on the price
 	 * @param price price to convert
-	 * @return String with £ or p symbol
+	 * @return String with ï¿½ or p symbol
 	 */
 	private String value(double price) {
-		return ((price < 1) ? price + "p" : "£ " + price);
+		return ((price < 1) ? price + "p" : "Â£ " + price);
 	}
 	
 	/***
-	 * Method to add all elements in product managment into the list 
+	 * Method to add all elements in product management into the list 
 	 */
 	private void addToList() {
 		for (Product item : managment.getProducts()) {

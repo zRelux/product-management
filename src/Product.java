@@ -42,7 +42,7 @@ public class Product {
 
 	/***
 	 * Updates the price of the product
-	 * @param price for the product
+	 * @param new price for the product
 	 */
 	public void setPrice(double price) {
 		this.price = price;
@@ -84,7 +84,6 @@ public class Product {
 	 * Returns the object in to string format
 	 * @return string format of the object
 	 */
-        @Override
 	public String toString() {
 		return "Product: " + getName() + " stock level: " + getStockLevel() + " price at: " + getPrice();
 	}

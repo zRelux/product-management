@@ -190,4 +190,12 @@ public class ProductManagement {
 	public void setTotalPrice(double totalPrice) {
 		this.totalPrice = totalPrice;
 	}
+
+	/***
+	 * Clears the price values
+	 */
+	public void clearSales() {
+		this.totalPrice = 0;
+		this.itemsSold = 0;		
+	}
 }

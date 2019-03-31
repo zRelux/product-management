@@ -29,20 +29,21 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class Window extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	//JMenu elements
+	// JMenu elements
 	private JMenuBar menuBar;
 	private JMenu mnFile;
 	private JMenuItem mntmInformation;
+	private JMenuItem mntmClearSales;
 	private JMenuItem mntmClearList;
 	private JMenu mnAbout;
 	private JMenuItem mntmSaveToFile;
-	
-	//JList
+
+	// JList
 	private JScrollPane scrollPane;
 	private JList<String> list;
-	private DefaultListModel<String> model = new DefaultListModel<>();
-	
-	//Add Section
+	private DefaultListModel<String> model = new DefaultListModel<String>();
+
+	// Add Section
 	private JPanel addPanel;
 	private JLabel lblAddNewProduct;
 	private JSeparator addSeparator;
@@ -53,8 +54,8 @@ public class Window extends JFrame {
 	private JLabel lblPrice;
 	private JTextField txtPrice;
 	private JButton btnAdd;
-	
-	//Sell Section
+
+	// Sell Section
 	private JPanel sellPanel;
 	private JLabel lblSell;
 	private JSeparator sellSeparator;
@@ -63,8 +64,8 @@ public class Window extends JFrame {
 	private JLabel lblSellItem;
 	private JTextField txtSellItem;
 	private JButton btnSell;
-	
-	//Set Section
+
+	// Set Section
 	private JPanel updatePanel;
 	private JLabel lblUpdateProduct;
 	private JSeparator updateSeparator;
@@ -82,15 +83,15 @@ public class Window extends JFrame {
 	private JButton btnSetName;
 	private JSeparator nameSeparator;
 
-	//Remove Section
+	// Remove Section
 	private JPanel removePanel;
 	private JLabel lblRemoveSelectedProduct;
 	private JSeparator removeSeparator;
 	private JButton btnRemoveSelectedItem;
-	
-	//Productmanagment object
+
+	// Productmanagment object
 	private ProductManagement managment;
-	
+
 	public Window() {
 		managment = new ProductManagement();
 		init();
@@ -116,9 +117,9 @@ public class Window extends JFrame {
 		setResizable(false);
 		setLocationRelativeTo(null);
 
-		// JMENU 
+		// JMENU
 		menuBar = new JMenuBar();
-		
+
 		mntmSaveToFile = new JMenuItem("Save to file");
 		mntmSaveToFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -137,11 +138,25 @@ public class Window extends JFrame {
 				}
 			}
 		});
-		
+
+		mntmClearSales = new JMenuItem("Clear sales");
+		mntmClearSales.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int res = JOptionPane.showConfirmDialog(getContentPane(), "Are you sure you want to delete everything",
+						"Information", JOptionPane.YES_NO_OPTION);
+				if (res == 0) {
+					managment.clearSales();
+					lblSoldItems.setText("Sold items " + managment.getItemsSold() + " for a total of "
+							+ value(managment.getTotalPrice()));
+
+				}
+			}
+		});
+
 		mntmClearList = new JMenuItem("Clear list");
 		mntmClearList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int res = JOptionPane.showConfirmDialog(getContentPane(), "Are you sure you want to delete everything",
+				int res = JOptionPane.showConfirmDialog(getContentPane(), "Are you sure you want to clear the sales?",
 						"Information", JOptionPane.YES_NO_OPTION);
 				if (res == 0) {
 					managment.clearAll();
@@ -149,27 +164,29 @@ public class Window extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmInformation = new JMenuItem("Information");
 		mntmInformation.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showConfirmDialog(getContentPane(), "Basic Product Management software made by Leonardo Drici 1905444",
-						"Information", JOptionPane.PLAIN_MESSAGE);
+				JOptionPane.showConfirmDialog(getContentPane(),
+						"Basic Product Management software made by Leonardo Drici 1905444", "Information",
+						JOptionPane.PLAIN_MESSAGE);
 			}
 		});
-		
+
 		mnFile = new JMenu("File");
 		mnFile.add(mntmSaveToFile);
+		mnFile.add(mntmClearSales);
 		mnFile.add(mntmClearList);
-		
+
 		mnAbout = new JMenu("About");
 		mnAbout.add(mntmInformation);
-		
+
 		menuBar.add(mnFile);
 		menuBar.add(mnAbout);
-		
+
 		setJMenuBar(menuBar);
-		
+
 		// LIST SECTION
 		scrollPane = new JScrollPane();
 		scrollPane.setBounds(10, 10, 320, 580);
@@ -198,7 +215,7 @@ public class Window extends JFrame {
 		});
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setModel(model);
-		
+
 		getContentPane().add(scrollPane);
 
 		// ADD NEW PRODUCT SECTION
@@ -263,26 +280,28 @@ public class Window extends JFrame {
 							txtStock.setText("");
 							txtPrice.setText("");
 						} catch (NumberFormatException e) {
-							JOptionPane.showMessageDialog(getContentPane(), "Couldn't add product because price is not a number",
-									"Error", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(getContentPane(),
+									"Couldn't add product because price is not a number", "Error",
+									JOptionPane.ERROR_MESSAGE);
 						}
 					} catch (NumberFormatException e) {
-						JOptionPane.showMessageDialog(getContentPane(), "Couldn't add product because stock number is not a number",
-								"Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(getContentPane(),
+								"Couldn't add product because stock number is not a number", "Error",
+								JOptionPane.ERROR_MESSAGE);
 					}
 
 				} else {
-					if(txtName.getText().equals("")) {
+					if (txtName.getText().equals("")) {
 						JOptionPane.showMessageDialog(getContentPane(), "Name field cannot be empty", "Error",
 								JOptionPane.ERROR_MESSAGE);
-					}else if(txtStock.getText().equals("")) {
+					} else if (txtStock.getText().equals("")) {
 						JOptionPane.showMessageDialog(getContentPane(), "Stock field cannot be empty", "Error",
 								JOptionPane.ERROR_MESSAGE);
-					}else if(txtPrice.getText().equals("")) {
+					} else if (txtPrice.getText().equals("")) {
 						JOptionPane.showMessageDialog(getContentPane(), "Price field cannot be empty", "Error",
 								JOptionPane.ERROR_MESSAGE);
 					}
-					
+
 				}
 			}
 		});
@@ -350,15 +369,16 @@ public class Window extends JFrame {
 									+ value(managment.getProduct(selectedProduct).getPrice()) + " the stock level is "
 									+ managment.getProduct(selectedProduct).getStockLevel());
 						} catch (SellingException e) {
-							JOptionPane.showMessageDialog(getContentPane(), e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(getContentPane(), e.getMessage(), "Error",
+									JOptionPane.ERROR_MESSAGE);
 						}
 					} else {
 						JOptionPane.showMessageDialog(getContentPane(), "Item cannot be less than 0", "Error",
 								JOptionPane.ERROR_MESSAGE);
 					}
 				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(getContentPane(), "Couldn't sell product because number is not correct.",
-							"Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(getContentPane(),
+							"Couldn't sell product because number is not correct.", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -447,12 +467,13 @@ public class Window extends JFrame {
 								+ value(managment.getProduct(selectedProduct).getPrice()) + " the stock level is "
 								+ managment.getProduct(selectedProduct).getStockLevel());
 					} else {
-						JOptionPane.showMessageDialog(getContentPane(), "Couldn't update stock because the value is less than 0",
-								"Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(getContentPane(),
+								"Couldn't update stock because the value is less than 0", "Error",
+								JOptionPane.ERROR_MESSAGE);
 					}
 				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(getContentPane(), "Couldn't update stock because it is not a number", "Error",
-							JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(getContentPane(), "Couldn't update stock because it is not a number",
+							"Error", JOptionPane.ERROR_MESSAGE);
 				}
 
 			}
@@ -471,12 +492,13 @@ public class Window extends JFrame {
 								+ value(managment.getProduct(selectedProduct).getPrice()) + " the stock level is "
 								+ managment.getProduct(selectedProduct).getStockLevel());
 					} else {
-						JOptionPane.showMessageDialog(getContentPane(), "Couldn't update price because the value is less than 0",
-								"Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(getContentPane(),
+								"Couldn't update price because the value is less than 0", "Error",
+								JOptionPane.ERROR_MESSAGE);
 					}
 				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(getContentPane(), "Couldn't update price because it is not a number", "Error",
-							JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(getContentPane(), "Couldn't update price because it is not a number",
+							"Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -494,8 +516,8 @@ public class Window extends JFrame {
 					btnSetStock.setEnabled(false);
 					btnSell.setEnabled(false);
 				} else {
-					JOptionPane.showMessageDialog(getContentPane(), "Couldn't change product name because name is empty", "Error",
-							JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(getContentPane(),
+							"Couldn't change product name because name is empty", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -525,8 +547,9 @@ public class Window extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				int index = list.getSelectedIndex();
 				if (index > -1) {
-					int res = JOptionPane.showConfirmDialog(getContentPane(), "Are you sure you want to delete " + managment.getProduct(index).getName(),
-							"Information", JOptionPane.YES_NO_OPTION);
+					int res = JOptionPane.showConfirmDialog(getContentPane(),
+							"Are you sure you want to delete " + managment.getProduct(index).getName(), "Information",
+							JOptionPane.YES_NO_OPTION);
 					if (res == 0) {
 						managment.removeProduct(index);
 						model.remove(index);
@@ -541,7 +564,7 @@ public class Window extends JFrame {
 						btnSetStock.setEnabled(false);
 						btnSell.setEnabled(false);
 					}
-					
+
 				} else {
 					JOptionPane.showMessageDialog(getContentPane(), "Please select a Product to delete", "Error",
 							JOptionPane.ERROR_MESSAGE);
@@ -556,16 +579,17 @@ public class Window extends JFrame {
 	}
 
 	/***
-	 * Returns a string with the Â£ or p symbol based on the price
+	 * Returns a string with the £ or p symbol based on the price
+	 * 
 	 * @param price price to convert
-	 * @return String with ï¿½ or p symbol
+	 * @return String with £ or p symbol
 	 */
 	private String value(double price) {
-		return ((price < 1) ? price + "p" : "Â£ " + price);
+		return ((price < 1) ? price + "p" : "£ " + price);
 	}
-	
+
 	/***
-	 * Method to add all elements in product management into the list 
+	 * Method to add all elements in product managment into the list
 	 */
 	private void addToList() {
 		for (Product item : managment.getProducts()) {
